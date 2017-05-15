@@ -54,7 +54,7 @@ function BER = ComputeBER_Numerically_A(SNR_dB)
 			 
 			 %Noise Addition
 			 N = sqrt(No/2) * randn(1,length(s_LPF));   %Generate AWGN
-			 r = s + N;                           %Received Signal
+			 r = s_LPF + N;                           %Received Signal
 			 %figure;
 			 %plot(t,r);
 			 
