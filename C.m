@@ -1,8 +1,12 @@
-
+SNR_dB = -10:8;
+BER_Numerically_A = ComputeBER_Numerically_A(SNR_dB);  
+BER_Numerically_B = ComputeBER_Numerically_B(SNR_dB); 
 figure;
-semilogy(SNR_dB, BER);
+semilogy(SNR_dB, BER_Numerically_A);
 grid on;
-title('Req. A');
+title('Req. C');
 xlabel('SNR in dB');
 ylabel('BER');
 hold on;
+semilogy(SNR_dB, BER_Numerically_B);
+legend('Numerical BER of A (Matched)', 'Numerical BER of B (Rectangular)');
