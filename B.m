@@ -14,7 +14,18 @@ num_iterations = 50;
                                    
 SNR_dB = -10:8;
 BER = zeros(size(SNR_dB));
-SNR_dim = 10.^(SNR_dB/10);                    
+SNR_dim = 10.^(SNR_dB/10);  
+
+%Triangular Pulse
+t = 0 : Ts : Ts_symbol;
+p = abs (2 * (t / Ts_symbol - floor ( t / Ts_symbol + 0.5 )));
+p = p ./ sqrt(sum(p.^2) * (1 / Fs));
+%plot(t,p);
+%figure;
+
+%Receiver Pulse: Rectangular Pulse
+g = rectangularPulse(t);
+g = g ./ sqrt(sum(g.^2) * (1 / Fs));
 
 for i = 1 : length(SNR_dB)    
  accumulated_BER = 0;                            %Required for averaging.
@@ -22,17 +33,6 @@ for i = 1 : length(SNR_dB)
 
      for j = 1 : num_iterations
          num_bit_errors = 0;
-         
-         %Triangular Pulse
-         t = 0 : Ts : Ts_symbol;
-         p = abs (2 * (t / Ts_symbol - floor ( t / Ts_symbol + 0.5 )));
-         p = p ./ sqrt(sum(p.^2) * (1 / Fs));
-         %plot(t,p);
-         %figure;
-         
-         %Receiver Pulse: Rectangular Pulse
-         g = abs (2 * ((Ts_symbol-t) / Ts_symbol - floor ( (Ts_symbol-t) / Ts_symbol + 0.5 )));
-         g = g ./ sqrt(sum(g.^2) * (1 / Fs));
 
          %Delta Stream
          t = 0 : Ts : Ts_symbol * (signal_length - 1);
@@ -59,7 +59,7 @@ for i = 1 : length(SNR_dB)
          %figure;
          %plot(t,r);
          
-         %Matched Filter Convolution
+         %Receiving Filter Convolution
          X = conv(r, g, 'same');
          %figure;
          %plot(t,X);
@@ -84,7 +84,7 @@ end
 figure;
 semilogy(SNR_dB, BER);
 grid on;
-title('Req. A');
+title('Req. B');
 xlabel('SNR in dB');
 ylabel('BER');
 hold on;
