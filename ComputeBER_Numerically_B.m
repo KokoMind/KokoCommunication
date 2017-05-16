@@ -25,6 +25,9 @@ function BER = ComputeBER_Numerically_B(SNR_dB)
 	%Receiver Pulse: Rectangular Pulse
 	g = rectangularPulse(t);
 	g = g ./ sqrt(sum(g.^2) * (1 / Fs));
+     
+    %LPF
+    LPF = 1;                               %Unlimited Bandwidth in Frequency is Delta in Time.
 
 	for i = 1 : length(SNR_dB)    
 	 accumulated_BER = 0;                            %Required for averaging.
@@ -47,7 +50,6 @@ function BER = ComputeBER_Numerically_B(SNR_dB)
 			 %plot(t, s);
 			 
 			 %LPF Convolution
-			 LPF = 1;                               %Unlimited Bandwidth in Frequency is Delta in Time.
 			 s_LPF = conv(s, LPF, 'same');
 			 %figure;
 			 %plot(t, s_LPF);
