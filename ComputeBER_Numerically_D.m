@@ -4,14 +4,14 @@ function BER = ComputeBER_Numerically_D(SNR_dB)
 	a = 1;
 	Es = a^2 * Eb;  
 	Ts_symbol = 1e-6;
-	signal_length = 10;
+	signal_length = 1000;
 
 	%Sampling parameters
 	Fs = 20e6;
 	Ts = 1 / Fs;
 
 	%According to Relative Frequency Theorem, Many trials are required in order to converge to the real probabilty of error.
-	num_iterations = 1;         
+	num_iterations = 50;         
 	BER = zeros(size(SNR_dB));
 	SNR_dim = 10.^(SNR_dB/10);  
 		
@@ -25,14 +25,13 @@ function BER = ComputeBER_Numerically_D(SNR_dB)
 	%Matched Pulse: Triangular Pulse
 	g = abs (2 * ((Ts_symbol-t) / Ts_symbol - floor ( (Ts_symbol-t) / Ts_symbol + 0.5 )));
 	g = g ./ sqrt(sum(g.^2) * (1 / Fs));
-    
-    %LPF
-    channel_f = 1e10;
-    channel_sampling_f = channel_f * 100;
-    t_LPF=0:1/channel_sampling_f:0.0002;
-    LPF = 2 * channel_f * sinc (2 * channel_f * t_LPF);                               %Limited channel frequency response to 1MHZ
 
-	for i = 1 : 1
+    %LPF
+    channel_f = 1e6;
+    t=-0.000025:1/Fs:0.000025;
+    LPF = 2 * channel_f * sinc (2 * channel_f * t);  %Limited channel frequency response to 1MHZ, this is in time domain.
+    
+    for i = 1 : length(SNR_dB)
 	 accumulated_BER = 0;                            %Required for averaging.
 	 No = Fs * Es / SNR_dim(i);                      %WTF                  
 
@@ -44,37 +43,26 @@ function BER = ComputeBER_Numerically_D(SNR_dB)
 			 deltas = zeros(size(t));
 			 deltas(1 : Fs * Ts_symbol : end) = randi([1 2], 1, signal_length);
 			 deltas(deltas == 2) = -1;
-			 %stem(t, deltas);
-			 
+
 			 %PROCESS OF TRANSIMITION AND RECEPTION
 			 
 			 %Pulse Convolution
 			 s = conv(deltas, p, 'same');
-			 figure;
-             plot(t,s);
-             
+
 			 %LPF Convolution
-             s_LPF = conv(s, LPF, 'same');
-			 figure;
-             plot(t,s_LPF);
-             
+             s_LPF = conv(s, LPF, 'same') / Fs;
+
 			 %Noise Addition
 			 N = sqrt(No/2) * randn(1,length(s_LPF));   %Generate AWGN
 			 r = s_LPF + N;                           %Received Signal
-			 %figure;
-			 %plot(t,r);
-			 
+
 			 %Matched Filter Convolution
 			 X = conv(r, g, 'same');
-			 %figure;
-			 %plot(t,X);
 			 
 			 %Decision Making
 			 sampling_deltas = zeros(size(t));
 			 sampling_deltas(1 : Fs * Ts_symbol : end) = 1;
 			 X_sampled = sampling_deltas .* X;
-			 %figure;
-			 %stem(t,X_sampled);
 
 			 for k=1:length(X_sampled)
 				 if ((X_sampled(k) > 0 && deltas(k) < 0)||(X_sampled(k) < 0 && deltas(k) > 0))
@@ -85,5 +73,5 @@ function BER = ComputeBER_Numerically_D(SNR_dB)
 			 accumulated_BER = accumulated_BER + avg_bit_error;  
 		 end                                 
 	 BER(i) = accumulated_BER / num_iterations;                        
-	end
+    end
 end

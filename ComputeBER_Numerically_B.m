@@ -19,8 +19,6 @@ function BER = ComputeBER_Numerically_B(SNR_dB)
 	t = 0 : Ts : Ts_symbol;
 	p = abs (2 * (t / Ts_symbol - floor ( t / Ts_symbol + 0.5 )));
 	p = p ./ sqrt(sum(p.^2) * (1 / Fs));
-	%plot(t,p);
-	%figure;
 
 	%Receiver Pulse: Rectangular Pulse
 	g = rectangularPulse(t);
@@ -47,30 +45,21 @@ function BER = ComputeBER_Numerically_B(SNR_dB)
 			 
 			 %Pulse Convolution
 			 s = conv(deltas, p, 'same');
-			 %plot(t, s);
-			 
+
 			 %LPF Convolution
 			 s_LPF = conv(s, LPF, 'same');
-			 %figure;
-			 %plot(t, s_LPF);
-			 
+
 			 %Noise Addition
 			 N = sqrt(No/2) * randn(1,length(s_LPF));   %Generate AWGN
 			 r = s_LPF + N;                           %Received Signal
-			 %figure;
-			 %plot(t,r);
-			 
+
 			 %Receiving Filter Convolution
 			 X = conv(r, g, 'same');
-			 %figure;
-			 %plot(t,X);
-			 
+
 			 %Decision Making
 			 sampling_deltas = zeros(size(t));
 			 sampling_deltas(1 : Fs * Ts_symbol : end) = 1;
 			 X_sampled = sampling_deltas .* X;
-			 %figure;
-			 %stem(t,X_sampled);
 
 			 for k=1:length(X_sampled)
 				 if ((X_sampled(k) > 0 && deltas(k) < 0)||(X_sampled(k) < 0 && deltas(k) > 0))
