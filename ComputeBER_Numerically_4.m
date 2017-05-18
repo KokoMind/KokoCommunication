@@ -1,9 +1,9 @@
-function BER = ComputeBER_Numerically_D(SNR_dB)
+function BER = ComputeBER_Numerically_4(SNR_dB, alpha, Rs_symbol, clock_offset)
 	%Numerically.
 	Eb = 1;                                    
 	a = 1;
 	Es = a^2 * Eb;  
-	Ts_symbol = 1e-6;
+	Ts_symbol = 1 / Rs_symbol;
 	signal_length = 1000;
 
 	%Sampling parameters
@@ -15,16 +15,9 @@ function BER = ComputeBER_Numerically_D(SNR_dB)
 	BER = zeros(size(SNR_dB));
 	SNR_dim = 10.^(SNR_dB/10);  
 		
-	%Triangular Pulse
-	t = 0 : Ts : Ts_symbol;
-	p = abs (2 * (t / Ts_symbol - floor ( t / Ts_symbol + 0.5 )));
-	p = p ./ sqrt(sum(p.^2) * (1 / Fs));
-	%plot(t,p);
-	%figure;
-
-	%Matched Pulse: Triangular Pulse
-	g = abs (2 * ((Ts_symbol-t) / Ts_symbol - floor ( (Ts_symbol-t) / Ts_symbol + 0.5 )));
-	g = g ./ sqrt(sum(g.^2) * (1 / Fs));
+	%SRRC Pulse with its matched pulse gives RRC
+    p = rcosdesign(alpha, 100, Fs / Rs_symbol, 'sqrt');
+    p_matched = rcosdesign(alpha, 100, Fs / Rs_symbol, 'sqrt');
 
     %LPF
     channel_f = 1e6;
@@ -33,7 +26,7 @@ function BER = ComputeBER_Numerically_D(SNR_dB)
     
     for i = 1 : length(SNR_dB)
 	 accumulated_BER = 0;                            %Required for averaging.
-	 No = Fs * Es / SNR_dim(i);                      %WTF                  
+	 No = Es / SNR_dim(i);                           %WTF                  
 
 		 for j = 1 : num_iterations
 			 num_bit_errors = 0;
@@ -43,32 +36,33 @@ function BER = ComputeBER_Numerically_D(SNR_dB)
 			 deltas = zeros(size(t));
 			 deltas(1 : Fs * Ts_symbol : end) = randi([1 2], 1, signal_length);
 			 deltas(deltas == 2) = -1;
-
+             
 			 %PROCESS OF TRANSIMITION AND RECEPTION
 			 
 			 %Pulse Convolution
-			 s = conv(deltas, p, 'same');
+             s = conv(deltas, p, 'same');
 
 			 %LPF Convolution
              s_LPF = conv(s, LPF, 'same') / Fs;
+             
+             %Matched Pulse Convolution
+             r = conv(s_LPF, p_matched, 'same');
 
 			 %Noise Addition
 			 N = sqrt(No/2) * randn(1,length(s_LPF));   %Generate AWGN
-			 r = s_LPF + N;                           %Received Signal
-
-			 %Matched Filter Convolution
-			 X = conv(r, g, 'same');
-			 
+			 X = r + N;                           %Received Signal
+             
 			 %Decision Making
-			 sampling_deltas = zeros(size(t));
-			 sampling_deltas(1 : Fs * Ts_symbol : end) = 1;
-			 X_sampled = sampling_deltas .* X;
-
-			 for k=1:length(X_sampled)
-				 if ((X_sampled(k) > 0 && deltas(k) < 0)||(X_sampled(k) < 0 && deltas(k) > 0))
-					 num_bit_errors=num_bit_errors+1;
-				 end
-			 end
+             for k=1:length(t)
+                 if k + int32(Fs * Ts_symbol * clock_offset) <= length(t)       %For avoiding comparison, when index is out of range.
+                     %Clock offset is implemented, such that the index to
+                     %be compared with the deltas index is shifted to give
+                     %the same effect.
+                     if ((X(k + int32(Fs * Ts_symbol * clock_offset)) > 0 && deltas(k) < 0)||(X(k + int32(Fs * Ts_symbol * clock_offset)) < 0 && deltas(k) > 0))
+                         num_bit_errors=num_bit_errors+1;
+                     end
+                 end
+             end
 			 avg_bit_error = num_bit_errors / signal_length;             
 			 accumulated_BER = accumulated_BER + avg_bit_error;  
 		 end                                 

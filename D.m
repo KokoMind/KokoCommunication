@@ -1,12 +1,12 @@
 SNR_dB = -10:8;
-BER_Numerically_A = ComputeBER_Numerically_A(SNR_dB);  
-BER_Numerically_D = ComputeBER_Numerically_D(SNR_dB); 
+BER_Numerically_1 = ComputeBER_Numerically_1(SNR_dB);  
+BER_Numerically_3 = ComputeBER_Numerically_3(SNR_dB); 
 figure;
-semilogy(SNR_dB, BER_Numerically_A);
+semilogy(SNR_dB, BER_Numerically_1);
 grid on;
 title('Req. D');
 xlabel('SNR in dB');
 ylabel('BER');
 hold on;
-semilogy(SNR_dB, BER_Numerically_D);
+semilogy(SNR_dB, BER_Numerically_3);
 legend('Numerical BER of System 1', 'Numerical BER of System 3');

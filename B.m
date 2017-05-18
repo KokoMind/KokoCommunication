@@ -1,6 +1,6 @@
 SNR_dB = -10:8;
-BER_Numerically = ComputeBER_Numerically_B(SNR_dB);      
-BER_Analytically = ComputeBER_Analytically_B(SNR_dB);
+BER_Numerically = ComputeBER_Numerically_2(SNR_dB);      
+BER_Analytically = ComputeBER_Analytically_2(SNR_dB);
 figure;
 semilogy(SNR_dB, BER_Numerically);
 grid on;

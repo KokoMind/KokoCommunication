@@ -1,4 +1,4 @@
-function BER = ComputeBER_Numerically_A(SNR_dB)
+function BER = ComputeBER_Numerically_1(SNR_dB)
 	%Numerically.
 	Eb = 1;                                    
 	a = 1;
