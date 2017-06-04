@@ -1,4 +1,4 @@
-function BER = ComputeBER_Analyically_1(SNR_dB)
+function BER = ComputeBER_Analytically_1(SNR_dB)
 	% Analytically.
 	Eb = 1;                                    %Bit energy
 	a = 1;                                     %Decay factor

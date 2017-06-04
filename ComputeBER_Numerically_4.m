@@ -4,7 +4,7 @@ function BER = ComputeBER_Numerically_4(SNR_dB, alpha, Rs_symbol, clock_offset)
 	a = 1;
 	Es = a^2 * Eb;  
 	Ts_symbol = 1 / Rs_symbol;
-	signal_length = 1000;
+	signal_length = 4000;
 
 	%Sampling parameters
 	Fs = 20e6;
@@ -45,12 +45,12 @@ function BER = ComputeBER_Numerically_4(SNR_dB, alpha, Rs_symbol, clock_offset)
 			 %LPF Convolution
              s_LPF = conv(s, LPF, 'same') / Fs;
              
-             %Matched Pulse Convolution
-             r = conv(s_LPF, p_matched, 'same');
-
 			 %Noise Addition
 			 N = sqrt(No/2) * randn(1,length(s_LPF));   %Generate AWGN
-			 X = r + N;                           %Received Signal
+			 r = s_LPF + N;                           %Received Signal
+             
+             %Matched Pulse Convolution
+             X = conv(r, p_matched, 'same');
              
 			 %Decision Making
              for k=1:length(t)

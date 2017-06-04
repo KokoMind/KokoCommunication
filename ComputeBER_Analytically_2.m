@@ -1,4 +1,4 @@
-function BER = ComputeBER_Analyically_2(SNR_dB)
+function BER = ComputeBER_Analytically_2(SNR_dB)
 	%Analytically
 	%At First, we should get p(t) and g(t)
 	%Sampling parameters

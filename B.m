@@ -8,5 +8,5 @@ title('Req. B');
 xlabel('SNR in dB');
 ylabel('BER');
 hold on;
-semilogy(SNR_dB, BER_Analytically,'*');
+semilogy(SNR_dB, BER_Analytically,'--');
 legend('Numerically', 'Analytically');
